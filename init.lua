@@ -22,6 +22,23 @@ mymonths.flowers_die = true
 --Grass changes color in fall, and spring
 mymonths.grass_change = true
 
+-- configuration added by SFENCE
+-- length of month in days
+mymonths.month_days = 14;
+
+-- length of year in months
+mymonths.year_months = 12;
+
+-- true when holidays should be sended to players
+mymonths.chat_holidays = true;
+
+-- true when date should be sended to players every morning
+mymonths.chat_date = true;
+
+-- month when time should start after game started, values from 1 to year_months
+mymonths.start_in_month = 6;
+
+
 if minetest.get_modpath("lightning") then
    lightning.auto = false
 end
@@ -37,16 +54,34 @@ if input then
 
 end
 
+-- added by SFENCE
+-- fix configuration
+if (mymonths.month_days  ~= 14) or (mymonths.year_months ~= 12) then
+  if (mymonths.chat_holidays == true) then
+    mymonths.chat_holidays = false;
+    minetest.log("warning", "[mymonths] Send holidays via chat is supported only for month of 14 day lenght and year lenght 12 months.")
+  end
+  if (mymonths.chat_date == true) then
+    mymonths.chat_date = false;
+    minetest.log("warning", "[mymonths] Send date via chat is supported only for month of 14 day lenght and year lenght 12 months.")
+  end
+end
+
 dofile(modpath .. "/functions.lua")
 dofile(modpath .. "/abms.lua")
 dofile(modpath .. "/command.lua")
 dofile(modpath .. "/months.lua")
 
 if mymonths.use_weather == true then
-   dofile(modpath .. "/weather.lua")
+  if minetest.get_modpath("weather_with_wind") then
+    dofile(modpath .. "/weather_math.lua")
+    dofile(modpath .. "/weather_with_wind.lua")
+  else
+    dofile(modpath .. "/weather.lua")
+  end
 else
-   mymonths.snow_on_ground = false
-   mymonths.use_puddles = false
+  mymonths.snow_on_ground = false
+  mymonths.use_puddles = false
 end
 
 if mymonths.snow_on_ground == false then

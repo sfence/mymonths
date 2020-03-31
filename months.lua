@@ -2,6 +2,7 @@ local timechange = 0
 local gm = 0
 local gn = 0
 local timescale = 72
+local year_days = mymonths.year_months * mymonths.month_days;
 -- If exists read timescale from config and store locally to prevent outside modification
 if mymonths.timescale ~= nil then
 	timescale = mymonths.timescale
@@ -66,86 +67,94 @@ minetest.register_globalstep(function(dtime)
 --Day Night Speeds (Thanks to sofar for this)
 	local dc = tonumber(mymonths.day_counter)
 	local mc = tonumber(mymonths.month_counter)
-	local x = ((mc-1)*14)+dc
-	local ratio = ((math.cos((x / 168) * 2 * math.pi) * 0.8) / 2.0) + 0.5
+	local x = ((mc-1)*mymonths.month_days)+dc
+	local ratio = ((math.cos((x / year_days) * 2 * math.pi) * 0.8) / 2.0) + 0.5
 	local nightratio = math.floor(timescale * (ratio + 0.5))
 	local dayratio =  math.floor(timescale / (ratio + 0.5))
 
 	--Checks for morning
-	local time_in_seconds = minetest.get_timeofday() * 24000
+  --because of diferent night and day speed, this value is not precis
+	local time_in_hours = minetest.get_timeofday() * 24
 
-	if time_in_seconds >= 12001
-	and timechange == 0 then
+	if      (time_in_hours > 12)
+	    and (timechange == 0) then
 
 		timechange = 1
 		gm = 1
 	end
 
-	if time_in_seconds <= 12000
-	and timechange == 1 then
+	if      (time_in_hours <= 12)
+	    and (timechange == 1) then
 
 		timechange = 0
 		mymonths.day_counter = mymonths.day_counter + 1
 	end
 
-	if mymonths.day_counter >= 15 then
+	if mymonths.day_counter > mymonths.month_days then
 		mymonths.month_counter = mymonths.month_counter + 1
 		mymonths.day_counter = 1
 	end
 
 	if tonumber(mymonths.month_counter) == nil then
-		mymonths.monthcounter = 6
+		mymonths.month_counter = mymonths.start_in_month
 
-	elseif tonumber(mymonths.month_counter) >= 13 then
+	elseif tonumber(mymonths.month_counter) > mymonths.year_months then
 		mymonths.month_counter = 1
 		mymonths.day_counter = 1
 	end
 
 	-- Sets time speed in the morning
-	if time_in_seconds >= 6000
-	and time_in_seconds <= 12000
-	and gm == 1 then
+	if      (time_in_hours >= 6)
+      and (time_in_hours <= 12)
+	    and (gm == 1) then
 		minetest.setting_set("time_speed", dayratio)
-		minetest.chat_send_all("Good Morning! It is "..mymonths.day_name.." "..mymonths.month.." "..mymonths.day_counter)
+    if (mymonths.chat_date==true) then
+		  minetest.chat_send_all("Good Morning! It is "..mymonths.day_name.." "..mymonths.month.." "..mymonths.day_counter)
+    end
 		--minetest.chat_send_all("Time speed is "..dayratio.." and "..nightratio)
 
 		---Holidays
-		for i in ipairs(hol) do
+    if (mymonths.chat_holidays==true) then
+      for i in ipairs(hol) do
 
-			local h1 = hol[i][1]
-			local h2 = hol[i][2]
-			local h3 = hol[i][3]
+        local h1 = hol[i][1]
+        local h2 = hol[i][2]
+        local h3 = hol[i][3]
 
-			if mymonths.month_counter == h1
-			and mymonths.day_counter == h2 then
-				minetest.chat_send_all(h3)
-			end
-		end
+        if      (mymonths.month_counter == h1)
+            and (mymonths.day_counter == h2) then
+          minetest.chat_send_all(h3)
+        end
+      end
+    end
 
 		gm = 0
 		gn = 1
 	end
 
 	--Months
-	for i in ipairs(mon) do
+  if (mymonths.chat_date==true) then
+    for i in ipairs(mon) do
 
-		local m1 = mon[i][1]
-		local m2 = mon[i][2]
-		local m3 = mon[i][3]
-		local m4 = mon[i][4]
-		local m5 = mon[i][5]
+      local m1 = mon[i][1]
+      local m2 = mon[i][2]
+      local m3 = mon[i][3]
+      local m4 = mon[i][4]
+      local m5 = mon[i][5]
 
-		if mymonths.month_counter == m1 then
+      if mymonths.month_counter == m1 then
 
-			mymonths.month = m2
-			mymonths.day_speed = m3
-			mymonths.night_speed = m4
-		end
-	end
+        mymonths.month = m2
+        -- looks like is not used 
+        --mymonths.day_speed = m3
+        --mymonths.night_speed = m4
+      end
+    end
+  end
 
-	if time_in_seconds >= 22000
-	and time_in_seconds <= 24000
-	and gn == 1 then
+	if      (time_in_hours >= 22)
+	    and (time_in_hours <= 24)
+	    and (gn == 1) then
 
 		minetest.setting_set("time_speed", nightratio)
 
@@ -153,16 +162,18 @@ minetest.register_globalstep(function(dtime)
 	end
 
 	-- Set the name of the day
-	for i in ipairs(days) do
+  if (mymonths.chat_date==true) then
+    for i in ipairs(days) do
 
-		local w1 = days[i][1]
-		local w2 = days[i][2]
-		local dy = days[i][3]
+      local w1 = days[i][1]
+      local w2 = days[i][2]
+      local dy = days[i][3]
 
-		if mymonths.day_counter == w1
-		or mymonths.day_counter == w2 then
+      if      (mymonths.day_counter == w1)
+          or  (mymonths.day_counter == w2) then
 
-			mymonths.day_name = dy
-		end
-	end
+        mymonths.day_name = dy
+      end
+    end
+  end
 end)
