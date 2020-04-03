@@ -40,7 +40,7 @@ function mymonths.probability_function(presence, actual_value)
   return probability;
 end
 
-function mymonths.clouds_presence_chance(pos, presence_def, basic_chance_rewrite)
+function mymonths.clouds_presence_chance(presence_def, basic_chance_rewrite)
   local basic_chance = presence_def.basic_chance;
   if (basic_chance_rewrite~=0.0) then
     basic_chance = basic_chance_rewrite;
@@ -63,7 +63,7 @@ function mymonths.clouds_presence_chance(pos, presence_def, basic_chance_rewrite
   return presence_chance;
 end
 
-function mymonths.wind_presence_chance(pos, presence_def, basic_chance_rewrite)
+function mymonths.wind_presence_chance(presence_def, basic_chance_rewrite)
   local basic_chance = presence_def.basic_chance;
   if (basic_chance_rewrite~=0.0) then
     basic_chance = basic_chance_rewrite;
@@ -93,7 +93,7 @@ function mymonths.wind_presence_chance(pos, presence_def, basic_chance_rewrite)
   return presence_chance;
 end
 
-function mymonths.weather_presence_chance(pos, presence_def, basic_chance_rewrite, clouds_and_wind)
+function mymonths.weather_presence_chance(clouds_and_wind, presence_def, basic_chance_rewrite)
   local basic_chance = presence_def.basic_chance;
   if (basic_chance_rewrite~=0.0) then
     basic_chance = basic_chance_rewrite;
