@@ -2,7 +2,7 @@
 -- get normalized year time
 mymonths.normalized_year_time = function()
   return    (mymonths.month_counter/mymonths.year_months)*12
-          + (mymonths.day_counter/mymonth.month_days);
+          + (mymonths.day_counter/mymonths.month_days);
 end
 
 -- 
@@ -54,7 +54,7 @@ function mymonths.clouds_presence_chance(presence_def, basic_chance_rewrite)
   if (presence_def.year_time_presence~=nil) then
     minetest.log("warning", "year_time_presence "..dump(presence_def.year_time_presence));
     local year_time = mymonths.normalized_year_time();
-    presence_chance = presence_chance * mymonth.probability_function(presence_def.year_time_presence, year_time);
+    presence_chance = presence_chance * mymonths.probability_function(presence_def.year_time_presence, year_time);
   end
 
   -- final chance
@@ -77,14 +77,14 @@ function mymonths.wind_presence_chance(presence_def, basic_chance_rewrite)
   if (presence_def.year_time_presence~=nil) then
     minetest.log("warning", "year_time_presence "..dump(presence_def.year_time_presence));
     local year_time = mymonths.normalized_year_time();
-    presence_chance = presence_chance * mymonth.probability_function(presence_def.year_time_presence, year_time);
+    presence_chance = presence_chance * mymonths.probability_function(presence_def.year_time_presence, year_time);
   end
   
   -- day time
   if (presence_def.day_time_presence~=nil) then
     minetest.log("warning", "day_time_presence "..dump(presence_def.day_time_presence));
     local day_time = minetest.get_timeofday();
-    presence_chance = presence_chance * mymonth.probability_function(presence_def.day_time_presence, day_time);
+    presence_chance = presence_chance * mymonths.probability_function(presence_def.day_time_presence, day_time);
   end
   
   -- final chance
@@ -107,20 +107,20 @@ function mymonths.weather_presence_chance(clouds_and_wind, presence_def, basic_c
   if (presence_def.year_time_presence~=nil) then
     minetest.log("warning", "year_time_presence "..dump(presence_def.year_time_presence));
     local year_time = mymonths.normalized_year_time();
-    presence_chance = presence_chance * mymonth.probability_function(presence_def.year_time_presence, year_time);
+    presence_chance = presence_chance * mymonths.probability_function(presence_def.year_time_presence, year_time);
   end
   
   -- day time
   if (presence_def.day_time_presence~=nil) then
     minetest.log("warning", "day_time_presence "..dump(presence_def.day_time_presence));
     local day_time = minetest.get_timeofday();
-    presence_chance = presence_chance * mymonth.probability_function(presence_def.day_time_presence, day_time);
+    presence_chance = presence_chance * mymonths.probability_function(presence_def.day_time_presence, day_time);
   end
   
   -- clouds density
   if (presence_def.clouds_density_presence~=nil) then
     minetest.log("warning", "clouds_density_presence "..dump(presence_def.clouds_density_presence));
-    presence_chance = presence_chance * mymonth.probability_function(presence_def.clouds_density_presence, clouds_and_wind.clouds_density);
+    presence_chance = presence_chance * mymonths.probability_function(presence_def.clouds_density_presence, clouds_and_wind.clouds_density);
   end
       
   -- clouds gray
@@ -129,31 +129,31 @@ function mymonths.weather_presence_chance(clouds_and_wind, presence_def, basic_c
     local clouds_gray =   0.2126 * clouds_and_wind.clouds.color.r 
                         + 0.7152 * clouds_and_wind.clouds.color.g
                         + 0.0722 * clouds_and_wind.clouds.color.b;
-    presence_chance = presence_chance * mymonth.probability_function(presence_def.clouds_gray_presence, clouds_gray);
+    presence_chance = presence_chance * mymonths.probability_function(presence_def.clouds_gray_presence, clouds_gray);
   end
   
   -- clouds height
   if (presence_def.clouds_height_presence~=nil) then
     minetest.log("warning", "clouds_height_presence "..dump(presence_def.clouds_height_presence));
-    presence_chance = presence_chance * mymonth.probability_function(presence_def.clouds_height_presence, clouds_and_wind.clouds_height);
+    presence_chance = presence_chance * mymonths.probability_function(presence_def.clouds_height_presence, clouds_and_wind.clouds_height);
   end
   
   -- clouds thickness
   if (presence_def.clouds_thickness_presence~=nil) then
     minetest.log("warning", "clouds_thickness_presence "..dump(presence_def.clouds_thickness_presence));
-    presence_chance = presence_chance * mymonth.probability_function(presence_def.clouds_thickness_presence, clouds_and_wind.clouds_thickness);
+    presence_chance = presence_chance * mymonths.probability_function(presence_def.clouds_thickness_presence, clouds_and_wind.clouds_thickness);
   end
   
   -- wind speed
   if (presence_def.wind_speed_presence~=nil) then
     minetest.log("warning", "wind_speed_presence "..dump(presence_def.wind_speed_presence));
-    presence_chance = presence_chance * mymonth.probability_function(presence_def.wind_speed_presence, clouds_and_wind.wind_speed);
+    presence_chance = presence_chance * mymonths.probability_function(presence_def.wind_speed_presence, clouds_and_wind.wind_speed);
   end
   
   -- wind direction
   if (presence_def.wind_direction_presence~=nil) then
     minetest.log("warning", "wind_direction_presence "..dump(presence_def.wind_direction_presence));
-    presence_chance = presence_chance * mymonth.probability_function(presence_def.wind_direction_presence, clouds_and_wind.wind_direction);
+    presence_chance = presence_chance * mymonths.probability_function(presence_def.wind_direction_presence, clouds_and_wind.wind_direction);
   end
   
   -- callback

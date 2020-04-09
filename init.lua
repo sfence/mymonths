@@ -1,42 +1,84 @@
 --Settings
 mymonths = {}
 
+-- SFENCE: setting from minetest configuration
+
 --Turn damage on or off. This will make storms and hail cause damage to players
-mymonths.damage = false
+mymonths.damage = minetest.setting_getbool("mymonths_damage");
+if (mymonths.damage==nil) then
+  mymonths.damage = false
+end
 
 --You can turn weather off; this will put snow and puddles off too
-mymonths.use_weather = true
+mymonths.use_weather = minetest.setting_getbool("mymonths_use_weather");
+if (mymonths.use_weather==nil) then
+  mymonths.use_weather = true
+end
 
 --Leaves change color in the fall.
-mymonths.leaves = true
+mymonths.leaves = minetest.setting_getbool("mymonths_leaves");
+if (mymonths.leaves==nil) then
+  mymonths.leaves = true
+end
 
 --Have snow accumulate on the ground
-mymonths.snow_on_ground = true
+mymonths.snow_on_ground = minetest.setting_getbool("mymonths_snow_on_ground");
+if (mymonths.snow_on_ground==nil) then
+  mymonths.snow_on_ground = true
+end
 
 --Puddles appear when raining
-mymonths.use_puddles = true
+mymonths.use_puddles = minetest.setting_getbool("mymonths_use_puddles");
+if (mymonths.use_puddles==nil) then
+  mymonths.use_puddles = true
+end
 
 --Flowers die in winter, grown in spring
-mymonths.flowers_die = true
+mymonths.flowers_die = minetest.setting_getbool("mymonths_flowers_die");
+if (mymonths.flowers_die==nil) then
+  mymonths.flowers_die = true
+end
 
 --Grass changes color in fall, and spring
-mymonths.grass_change = true
+mymonths.grass_change = minetest.setting_getbool("mymonths_grass_change");
+if (mymonths.grass_change==nil) then
+  mymonths.grass_change = true
+end
 
 -- configuration added by SFENCE
 -- length of month in days
-mymonths.month_days = 14;
+mymonths.month_days = tonumber(minetest.setting_get("mymonths_month_days"));
+if (mymonths.month_days==nil) then
+  mymonths.month_days = 14;
+end
 
 -- length of year in months
-mymonths.year_months = 12;
+mymonths.year_months = tonumber(minetest.setting_get("mymonths_year_months"));
+if (mymonths.year_months==nil) then
+  mymonths.year_months = 12;
+end
 
 -- true when holidays should be sended to players
-mymonths.chat_holidays = true;
+mymonths.chat_holidays = minetest.setting_getbool("mymonths_chat_holidays");
+if (mymonths.chat_holidays==nil) then
+  mymonths.chat_holidays = true;
+end
 
 -- true when date should be sended to players every morning
-mymonths.chat_date = true;
+mymonths.chat_date = minetest.setting_getbool("mymonths_chat_date");
+if (mymonths.chat_date==nil) then
+  mymonths.chat_date = true;
+end
+
+-- added by SFENCE
+-- mod storage support
+mymonths.storage = minetest.get_mod_storage();
 
 -- month when time should start after game started, values from 1 to year_months
-mymonths.start_in_month = 6;
+mymonths.start_in_month = tonumber(minetest.setting_get("mymonths_start_in_month"));
+if (mymonths.start_in_month==nil) then
+  mymonths.start_in_month = 6;
+end
 
 
 if minetest.get_modpath("lightning") then
@@ -44,6 +86,8 @@ if minetest.get_modpath("lightning") then
 end
 
 local modpath = minetest.get_modpath("mymonths")
+--[[
+-- disabled, setting from minesfence game is used
 local input = io.open(modpath .. "/settings.txt", "r")
 
 if input then
@@ -51,8 +95,8 @@ if input then
    dofile(modpath .. "/settings.txt")
    input:close()
    input = nil
-
 end
+--]]
 
 -- added by SFENCE
 -- fix configuration
@@ -67,7 +111,7 @@ if (mymonths.month_days  ~= 14) or (mymonths.year_months ~= 12) then
   end
 end
 
-dofile(modpath .. "/functions.lua")
+--dofile(modpath .. "/functions.lua")
 dofile(modpath .. "/abms.lua")
 dofile(modpath .. "/command.lua")
 dofile(modpath .. "/months.lua")

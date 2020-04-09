@@ -99,8 +99,8 @@ local function generate_wind(weather_old, weather_new)
   weather_new.wind_angle = random_range(wind_select.angle, nil);
   local angle_rad = (weather_new.wind_angle/180.0)*math.pi;
   weather_new.wind = {
-    x = sin(angle_rad)*weather_new.wind_speed,
-    z = cos(angle_rad)*weather_new.wind_speed,
+    x = math.sin(angle_rad)*weather_new.wind_speed,
+    z = math.cos(angle_rad)*weather_new.wind_speed,
   };
   
   return weather_new;
@@ -118,14 +118,17 @@ local function generate_weather(weather_old)
   };
   weather_new = generate_wind(weather_old, weather_new);
   
+  --minetest.log("warning", "random weather: "..dump(weather_generations))
   local weather_select = random_select(weather_generations, weather_presence_callback, weather_old, weather_new);
+  --minetest.log("warning", "sel weather: "..dump(weather_select))
   
   weather_new.temperature = random_range(weather_select.temperature, nil);
   weather_new.humidity = random_range(weather_select.humidity, nil);
   
-  weather_new.fallings = table.copy(weather_select.falling);
+  weather_new.fallings = table.copy(weather_select.fallings);
   for key, falling in pairs(weather_new.fallings) do
-    weather_new.precipitation = random_range(weather_new[key].precipitation, nil);
+    --minetest.log("warning", "falling: "..dump(falling))
+    falling.precipitation = random_range(falling.precipitation, nil);
   end
   
   weather_new.lightning_density = random_range(weather_select.lightning_density, nil);
@@ -213,48 +216,50 @@ wind_generations = {
 };
 
 weather_generations = {
-  name = "default",
-  old_presence = {
-    basic_chance = 1,
-  },
-  new_presence = {
-    basic_chance = 1,
-    year_time_presence = {
-      probability_offset = 0,
-      probability_multiplier = 1,
-      lower_steepness = 1.2,
-      lower_border = -2,
-      upper_steepness = 1.2,
-      upper_border = 14,
+  {
+    name = "default",
+    old_presence = {
+      basic_chance = 1,
     },
-    day_time_presence = {
-      probability_offset = 0,
-      probability_multiplier = 1,
-      lower_steepness = 1.2,
-      lower_border = -2,
-      upper_steepness = 1.2,
-      upper_border = 3,
+    new_presence = {
+      basic_chance = 1,
+      year_time_presence = {
+        probability_offset = 0,
+        probability_multiplier = 1,
+        lower_steepness = 1.2,
+        lower_border = -2,
+        upper_steepness = 1.2,
+        upper_border = 14,
+      },
+      day_time_presence = {
+        probability_offset = 0,
+        probability_multiplier = 1,
+        lower_steepness = 1.2,
+        lower_border = -2,
+        upper_steepness = 1.2,
+        upper_border = 3,
+      },
     },
-  },
-  
-  temperature = {min=0,mnax=0},
-  humidity = {min=0,max=0},
-  fallings = {
-    {
-      precipitation = {min=0, max=0},
-      water_precipitation = false,
-      downfalls = {},
+    
+    temperature = {min=0,max=0},
+    humidity = {min=0,max=0},
+    fallings = {
+      {
+        precipitation = {min=0, max=0},
+        water_precipitation = false,
+        downfalls = {},
+      },
     },
+    
+    lightning_density = {min=0,max=0},
+    
+    update_interval = 10,
+    
+    time_start = {min=100,max=100},
+    time_end = {min=600,max=600},
+    
+    stable = true,
   },
-  
-  lightning_density = {min=0,max=0},
-  
-  update_interval = 10,
-  
-  time_start = {min=100,max=100},
-  time_end = {min=600,max=600},
-  
-  stable = true,
 };
 
 --Sets the weather types for each month

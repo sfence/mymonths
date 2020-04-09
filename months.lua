@@ -1,3 +1,6 @@
+
+local timer = 0
+
 local timechange = 0
 local gm = 0
 local gn = 0
@@ -7,6 +10,9 @@ local year_days = mymonths.year_months * mymonths.month_days;
 if mymonths.timescale ~= nil then
 	timescale = mymonths.timescale
 end	
+local time_speed = timescale;
+
+local storage = mymonths.storage;
 
 -- Set holidays
 local hol = {
@@ -49,8 +55,31 @@ local mon = {
 	{12, "December", t4, t2, .9},
 }
 
+-- added by SFENCE
+-- load data from storage
+if (storage:contains("timer")==true) then
+  timer = storage:get_int("timer");
+  storage:set_string("timer", "");
+end
+if (storage:contains("day_counter")==true) then
+  mymonths.day_counter = storage:get_int("day_counter");
+end
+if (storage:contains("month_counter")==true) then
+  mymonths.month_counter = storage:get_int("month_counter");
+end
+if (storage:contains("gm")==true) then
+  gm = storage:get_int("gm");
+end
+if (storage:contains("gn")==true) then
+  gn = storage:get_int("gn");
+end
+if (storage:contains("time_speed")==true) then
+  time_speed = storage:get_int("time_speed");
+end
+
+minetest.setting_set("time_speed", time_speed)
+
 -- Sets Month and length of day
-local timer = 0
 
 minetest.register_globalstep(function(dtime)
 
@@ -108,6 +137,8 @@ minetest.register_globalstep(function(dtime)
       and (time_in_hours <= 12)
 	    and (gm == 1) then
 		minetest.setting_set("time_speed", dayratio)
+    time_speed = dayratio;
+    
     if (mymonths.chat_date==true) then
 		  minetest.chat_send_all("Good Morning! It is "..mymonths.day_name.." "..mymonths.month.." "..mymonths.day_counter)
     end
@@ -157,6 +188,7 @@ minetest.register_globalstep(function(dtime)
 	    and (gn == 1) then
 
 		minetest.setting_set("time_speed", nightratio)
+    time_speed = nightratio;
 
 		gn = 0
 	end
@@ -176,4 +208,16 @@ minetest.register_globalstep(function(dtime)
       end
     end
   end
+  
+  storage:set_int("day_counter", mymonths.day_counter);
+  storage:set_int("month_counter", mymonths.month_counter);
+  storage:set_int("gm", gm);
+  storage:set_int("gn", gn);
+  storage:set_int("time_speed", time_speed);
 end)
+
+minetest.register_on_shutdown( function()
+    storage:set_int("timer", timer);
+  end);
+
+

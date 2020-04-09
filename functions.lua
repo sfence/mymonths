@@ -1,4 +1,6 @@
 
+-- SFENCE make this unused, mod storage is used instead
+
 -- Save table to file
 function mymonths.save_table()
 
@@ -59,3 +61,4 @@ else
 	mymonths.weather = load_data.weather
 	mymonths.day_name = load_data.day_name
 end
+
