@@ -14,6 +14,15 @@ local time_speed = timescale;
 
 local storage = mymonths.storage;
 
+local daynight_ratio = mymonths.weather_model.year_daynight;
+
+local function periodicChanges(periodic_def, year_day)
+  local phase = periodic_def.phase + ((year_day/year_days)*2*math.pi);
+	local value = math.cos(phase);
+  value = value * periodic_def.amplitude + periodic_def.offset
+  return value;
+end
+
 -- Set holidays
 local hol = {
 	{"12", 14, "It is New Years Eve!"},
@@ -54,6 +63,47 @@ local mon = {
 	{11, "November", t4, t2, .9},
 	{12, "December", t4, t2, .9},
 }
+local months = {
+  {
+    name = "January",
+  },
+  {
+    name = "February",
+  },
+  {
+    name = "March",
+  },
+  {
+    name = "April",
+  },
+  {
+    name = "May",
+  },
+  {
+    name = "June",
+  },
+  {
+    name = "July",
+  },
+  {
+    name = "August",
+  },
+  {
+    name = "September",
+  },
+  {
+    name = "October",
+  },
+  {
+    name = "November",
+  },
+  {
+    name = "December",
+  },
+}
+
+mymonths.day_counter = 1;
+mymonths.month_counter = mymonths.start_in_month;
 
 -- added by SFENCE
 -- load data from storage

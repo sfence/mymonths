@@ -4,3 +4,4 @@ flowers?
 bakedclay?
 moreplants?
 weather_with_wind?
+tempsurvive?

@@ -5,6 +5,52 @@ mymonths.normalized_year_time = function()
           + (mymonths.day_counter/mymonths.month_days);
 end
 
+local function periodicChanges(periodic_def, period)
+  local phase = periodic_def.phase + period;
+	local value = math.cos(phase);
+  value = value * periodic_def.amplitude + periodic_def.offset
+  return value;
+end
+
+-- update humadity for time of day and year
+mymonths.humidity_in_time = function(humidity)
+  local year_period = mymonths.normalized_year_time()/6*math.pi;
+  local day_period = minetest.get_timeofday()*2*math.pi;  
+  
+  local year_humidity = periodicChanges(mymonths.weather_model.year_humidity, year_period);
+  local day_humidity = periodicChanges(mymonths.weather_model.day_humidity, day_period);
+  
+  local humidity_change = (year_humidity+day_humidity-50)/50;
+  
+  if (humidity_change>0) then
+    humidity = humidity + (100-humidity)*humidity_change;
+  else
+    humidity = humidity + humidity*humidity_change;
+  end
+  
+  return humidity;
+end  
+
+-- update temperature for time of day, year and humidity
+mymonths.temperature_in_time = function(temperature, humidity)
+  local year_period = mymonths.normalized_year_time()/6*math.pi;
+  local day_period = minetest.get_timeofday()*2*math.pi;
+  
+  local model_year_temp = table.copy(mymonths.weather_model.year_temp)
+  local model_day_temp = table.copy(mymonths.weather_model.day_temp)
+  
+  local amplitude_change = (humidity/100)+0.5;
+  model_year_temp.amplitude = model_year_temp.amplitude*amplitude_change;
+  model_day_temp.amplitude = model_day_temp.amplitude*amplitude_change;
+  
+  local year_temp = periodicChanges(model_year_temp, year_period);
+  local day_temp = periodicChanges(model_day_temp, day_period);
+  
+  local temperature_change = (year_temp+day_temp)/(humidity/50);
+  
+  return temperature;
+end
+
 -- 
 -- mymonths probability function
 --

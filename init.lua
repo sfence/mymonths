@@ -70,6 +70,9 @@ if (mymonths.chat_date==nil) then
   mymonths.chat_date = true;
 end
 
+-- weather model
+mymonths.weather_model_file = minetest.setting_get("mymonths_weather_model_file");
+
 -- added by SFENCE
 -- mod storage support
 mymonths.storage = minetest.get_mod_storage();
@@ -80,6 +83,11 @@ if (mymonths.start_in_month==nil) then
   mymonths.start_in_month = 6;
 end
 
+-- add tempsurvive detection
+mymonths.have_tempsurvive = false;
+if minetest.get_modpath("tempsurvive") then
+  mymonths.have_tempsurvive = true;
+end
 
 if minetest.get_modpath("lightning") then
    lightning.auto = false
@@ -114,19 +122,23 @@ end
 --dofile(modpath .. "/functions.lua")
 dofile(modpath .. "/abms.lua")
 dofile(modpath .. "/command.lua")
-dofile(modpath .. "/months.lua")
+--dofile(modpath .. "/months.lua")
 
 if mymonths.use_weather == true then
   if minetest.get_modpath("weather_with_wind") then
     dofile(modpath .. "/weather_math.lua")
+    dofile(modpath .. "/weather_model.lua")
     dofile(modpath .. "/weather_with_wind.lua")
   else
     dofile(modpath .. "/weather.lua")
   end
+  dofile(modpath .. "/weather_nodes.lua")
 else
   mymonths.snow_on_ground = false
   mymonths.use_puddles = false
 end
+
+dofile(modpath .. "/months.lua")
 
 if mymonths.snow_on_ground == false then
    minetest.register_alias("mymonths:snow_cover_1", "air")

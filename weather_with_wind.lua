@@ -13,30 +13,50 @@ local weather_generations = {};
 
 local function random_range(range_def, random_value)
   if type(range_def)~="table" then
-    return range_def;
+    return range_def, random_value;
   end
   
+  local random_return = random_value;
+   
   if (random_value==nil) then
-    random_value = default.random_generator:next(0,16777215)/16777215.0;
+    if (range_def.trials==nil) then
+      random_value = default.random_generator:next(0,16777215)/16777215.0;
+    else
+      random_value = default.random_generator:rand_normal_dist(0,16777215, range_def.trials)/16777215.0;
+    end
+    random_return = random_value;
+  else
+    if (range_def.trials~=nil) and (random_value<0) then
+      local random_generator = PcgRandom(-random_value*16777215);
+      random_value = random_generator:rand_normal_dist(0,16777215, range_def.trials)/16777215.0;
+    else
+      if (random_value<0) then
+        random_value = -random_value;
+      end
+    end
   end
   
-  return range_def.min + (range_def.max-range_def.min)*random_value;
+  local value = range_def.min + (range_def.max-range_def.min)*random_value;
+  
+  return value, random_return;
 end
 
-local function random_color(color_def)
-  local random_value = nil;
+local function random_color(color_def, random_value)
+  local random_return;
+  local red;
+  red, random_return = random_range(color_def.r, random_value);
   if (color_def.depend_color==true) then
-    random_value = default.random_generator:next(0,16777215)/16777215.0;
+    random_value = random_return;
   end
     
   local color = {
-    r = random_range(color_def.r, random_value),
+    r = red,
     g = random_range(color_def.g, random_value),
     b = random_range(color_def.b, random_value),
     a = random_range(color_def.a, random_value),
   };
   
-  return color;
+  return color, random_return;
 end
 
 local function random_select(generations, presence_callback, weather_old, weather_new)
@@ -77,8 +97,8 @@ local function generate_clouds(weather_old)
   
   local clouds = {
     density = random_range(clouds_select.density, nil),
-    color = random_color(clouds_select.color),
-    ambient = random_color(clouds_select.ambient),
+    color = random_color(clouds_select.color, nil),
+    ambient = random_color(clouds_select.ambient, nil),
     height = math.floor(random_range(clouds_select.height, nil)+0.5),
     thickness = math.floor(random_range(clouds_select.thickness, nil)+0.5),
   };
@@ -113,22 +133,30 @@ local function weather_presence_callback(weather_old, weather_new, variant)
 end
 
 local function generate_weather(weather_old)
+  local actual_temperature;
+  local actual_humidity;
+  
+  actual_temperature, actual_humidity = mymonths.temperature_and_humidity_in_time();
+  
   local weather_new = {
-    clouds = generate_clouds(weather_old);
+    clouds = generate_clouds(weather_old),
   };
+  
   weather_new = generate_wind(weather_old, weather_new);
   
   --minetest.log("warning", "random weather: "..dump(weather_generations))
   local weather_select = random_select(weather_generations, weather_presence_callback, weather_old, weather_new);
   --minetest.log("warning", "sel weather: "..dump(weather_select))
   
-  weather_new.temperature = random_range(weather_select.temperature, nil);
-  weather_new.humidity = random_range(weather_select.humidity, nil);
+  weather_new.temperature = weather_new.temperature + random_range(weather_select.temperature, nil);
+  weather_new.humidity = weather_new.humidity + random_range(weather_select.humidity, nil);
   
   weather_new.fallings = table.copy(weather_select.fallings);
   for key, falling in pairs(weather_new.fallings) do
-    --minetest.log("warning", "falling: "..dump(falling))
-    falling.precipitation = random_range(falling.precipitation, nil);
+    minetest.log("warning", "falling: "..dump(falling))
+    local random_value;
+    falling.precipitation, random_value = random_range(falling.precipitation, nil);
+    falling.darken_color = random_color(falling.darken_color, random_value);
   end
   
   weather_new.lightning_density = random_range(weather_select.lightning_density, nil);
@@ -145,7 +173,29 @@ local function callback_get_new_weather(weather_old)
   return generate_weather(weather_old);
 end
 
-WeatherWithWind.callback_get_new_weather = callback_get_new_weather;
+local function callback_get_temperature_and_humidity_in_time(temperature, humidity)
+  humidity = mymonths.humidity_in_time(humidity);
+  temperature = mymonths.temperature_in_time(temperature, humidity);
+  
+  return temperature, humidity;
+end
+
+weather_with_wind.callback_get_new_weather = callback_get_new_weather;
+weather_with_wind.callback_get_temperature_and_humidity_in_time = callback_get_temperature_and_humidity_in_time;
+
+if (mymonths.have_tempsurvive==true) then
+  local function callback_get_temperatures(pos)
+      local longtime_temp = tempsurvive.get_avarage_temperature(pos)
+      local humidity = minetest.get_humidity(pos);
+      humidity = mymonths.humidity_in_time(humidity);
+      local shorttime_temp = mymonths.temperature_in_time(temperature, humidity);
+      local actual_weather = weather_with_wind.get_localized_weather(pos)
+      local actual_temp = actual_weather.temperature;
+      
+      return actual_temp, shorttime_temp, longtime_temp;
+    end
+  tempsurvive.callback_get_temperatures = callback_get_temperatures;
+end
 
 clouds_generations = {
   {
@@ -167,21 +217,21 @@ clouds_generations = {
     
     density = {min = 0, max = 1},
     color = {--#fff0f0e5
-          depend_color = true,
-          r = {min = 0xf0, max = 0xf0},
-          g = {min = 0xf0, max = 0xf0},
-          b = {min = 0xff, max = 0xff},
-          a = {min = 0xe5, max = 0xe5},
-        },
-      ambient = {--#000000,
-          depend_color = false,
-          r = 0x00,
-          g = 0x00,
-          b = 0x00,
-          a = 0xff,
-        },
-      height = {min=25,max=200},
-      thickness = {min=1,max=128},
+      depend_color = true,
+      r = {min = 0xf0, max = 0xf0},
+      g = {min = 0xf0, max = 0xf0},
+      b = {min = 0xff, max = 0xff},
+      a = {min = 0xe5, max = 0xe5},
+    },
+    ambient = {--#000000,
+      depend_color = false,
+      r = 0x00,
+      g = 0x00,
+      b = 0x00,
+      a = 0xff,
+    },
+    height = {min=25,max=200},
+    thickness = {min=1,max=128},
   },
 };
 wind_generations = {
@@ -247,6 +297,13 @@ weather_generations = {
       {
         precipitation = {min=0, max=0},
         water_precipitation = false,
+        darken_color = {
+          depend_color = true,
+          r = {min = 0x00, max = 0x00},
+          g = {min = 0x00, max = 0x00},
+          b = {min = 0x00, max = 0x00},
+          a = {min = 0x00, max = 0x00},
+        },
         downfalls = {},
       },
     },
